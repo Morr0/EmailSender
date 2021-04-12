@@ -1,6 +1,5 @@
 using System;
 using EmailSender.Web.Services;
-using EmailSender.Web.Utilities.Config;
 using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -24,8 +23,6 @@ namespace EmailSender.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-
-            services.Configure<Email>(Configuration.GetSection("Email"));
             
             // https://developers.google.com/api-client-library/dotnet/guide/aaa_oauth#web-applications-asp.net-core-3
             services.AddAuthentication(o =>
