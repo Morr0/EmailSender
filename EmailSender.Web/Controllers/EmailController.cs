@@ -66,6 +66,8 @@ namespace EmailSender.Web.Controllers
                 
                 await Task.Delay(1000).ConfigureAwait(false);
             }
+            
+            _emailsService.RemoveAll();
 
             return Redirect("/");
         }

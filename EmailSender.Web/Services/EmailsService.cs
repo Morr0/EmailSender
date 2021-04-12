@@ -16,5 +16,10 @@ namespace EmailSender.Web.Services
         {
             return _destinations;
         }
+
+        public void RemoveAll()
+        {
+            _destinations.Clear();
+        }
     }
 }
