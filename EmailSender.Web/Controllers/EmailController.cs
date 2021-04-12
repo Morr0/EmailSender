@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EmailSender.Web.Dtos;
+using EmailSender.Web.Services;
 using EmailSender.Web.Utilities;
-using EmailSender.Web.Utilities.Config;
 using Google.Apis.Auth.AspNetCore3;
 using Google.Apis.Gmail.v1;
 using Google.Apis.Gmail.v1.Data;
 using Google.Apis.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace EmailSender.Web.Controllers
 {
@@ -17,15 +16,24 @@ namespace EmailSender.Web.Controllers
     [GoogleScopedAuthorize(GmailService.ScopeConstants.GmailCompose)]
     public class EmailController : Controller
     {
+        private readonly EmailsService _emailsService;
+
+        public EmailController(EmailsService emailsService)
+        {
+            _emailsService = emailsService;
+        }
+        
         [HttpGet]
         public IActionResult Index()
         {
-            return View("Index");
+            return View("Index", new List<Destination>(_emailsService.Get()));
         }
 
         [HttpPost]
-        public async Task<IActionResult> Send([FromServices] IGoogleAuthProvider auth, [FromServices] IOptions<Email> emailConfig)
+        public async Task<IActionResult> Send([FromForm] SendEmailRequest request, [FromServices] IGoogleAuthProvider auth)
         {
+            if (!ModelState.IsValid) return View("Index", new List<Destination>(_emailsService.Get()));
+            
             var credentials = await auth.GetCredentialAsync().ConfigureAwait(false);
 
             var gmailService = new GmailService(new BaseClientService.Initializer
@@ -34,19 +42,20 @@ namespace EmailSender.Web.Controllers
                 ApplicationName = "EmailSender"
             });
 
-            int sections = (emailConfig.Value.Destinations.Count / 5) + 1;
+            var destinations = _emailsService.Get();
+            int sections = (destinations.Count / 5) + 1;
             var tasks = new List<Task>(5);
             for (int i = 0; i < sections; i++)
             {
-                var currFive = emailConfig.Value.Destinations.Skip(i * 5).Take(5);
+                var currFive = destinations.Skip(i * 5).Take(5);
                 tasks.Clear();
 
                 foreach (var destination in currFive)
                 {
-                    string body = emailConfig.Value.Template.Replace("{0}", destination.Name);
+                    string body = request.Template.Replace("{0}", destination.Name);
                     var message = new Message
                     {
-                        Raw = EmailMessageCreator.Message(destination.Name, destination.Email, emailConfig.Value.Subject,body)
+                        Raw = EmailMessageCreator.Message(destination.Name, destination.Email, request.Subject, body)
                     };
             
                     var compose = new UsersResource.MessagesResource.SendRequest(gmailService, message, "me");
@@ -59,6 +68,16 @@ namespace EmailSender.Web.Controllers
             }
 
             return Redirect("/");
+        }
+
+        [HttpPost("Add")]
+        public IActionResult AddEmail([FromForm] Destination destination)
+        {
+            if (!ModelState.IsValid) return View("Index", new List<Destination>(_emailsService.Get()));
+            
+            _emailsService.Add(destination);
+            
+            return RedirectToAction("Index");
         }
     }
 }

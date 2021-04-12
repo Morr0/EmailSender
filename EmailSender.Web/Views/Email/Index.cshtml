@@ -1,3 +1,35 @@
-﻿<form asp-controller="Email" asp-action="Send" method="post">
+﻿@model List<EmailSender.Web.Dtos.Destination>
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<h4 class="text-dark">Add destination</h4>
+<form asp-controller="Email" asp-action="AddEmail" method="post" class="form-group">
+    <label for="Name">Name: </label>
+    <input type="text" name="Name" id="Name" class="form-control" />
+    <label for="Email">Email: </label>
+    <input type="text" name="Email" id="Email" class="form-control" />
+    <input type="submit" class="btn btn-secondary" />
+</form>
+
+<hr />
+
+<h4 class="text-dark">Destinations</h4>
+<ul class="list-group">
+    @foreach (var destination in Model)
+    {
+        <li class="list-group-item">
+            Name: @destination.Name Email: @destination.Email
+        </li>
+    }
+</ul>
+
+<hr />
+
+<h4 class="text-dark">Content and send</h4>
+<form asp-controller="Email" asp-action="Send" method="post" class="form-group">
+    <label for="Subject">Subject: </label>
+    <input type="text" name="Subject" id="Subject" class="form-control" />
+    <label for="Template">Template (please put in {0} to substitute for Email): </label>
+    <textarea type="text" name="Template" id="Template" class="form-control"></textarea>
     <button type="submit" class="btn btn-primary">Send</button>
 </form>

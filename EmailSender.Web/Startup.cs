@@ -1,4 +1,5 @@
 using System;
+using EmailSender.Web.Services;
 using EmailSender.Web.Utilities.Config;
 using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -40,6 +41,8 @@ namespace EmailSender.Web
                     o.ClientId = Configuration.GetSection("Google").GetSection("ClientId").Value;
                     o.ClientSecret = Configuration.GetSection("Google").GetSection("ClientSecret").Value;
                 });
+
+            services.AddSingleton<EmailsService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

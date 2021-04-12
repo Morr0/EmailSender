@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using EmailSender.Web.Dtos;
 
 namespace EmailSender.Web.Utilities.Config
 {
